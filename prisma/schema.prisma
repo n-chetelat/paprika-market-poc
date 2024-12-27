@@ -8,11 +8,12 @@ datasource db {
 }
 
 model User {
-  id        String @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String
-  avatarUrl String
+  id             String @id @default(uuid())
+  hashedPassword String
+  firstName      String
+  lastName       String
+  email          String
+  avatarUrl      String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

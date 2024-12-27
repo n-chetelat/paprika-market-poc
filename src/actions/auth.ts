@@ -27,6 +27,7 @@ export async function login(prevState: any, formData: FormData) {
   const user = await prisma.user.findFirst({
     where: { email },
   });
+
   const passwordValid = compareSync(password, user?.hashedPassword || "");
 
   if (user === null || !passwordValid) {
