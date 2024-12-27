@@ -1,31 +1,34 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { isLoggedIn } from "@/queries/auth";
-import LogoutButton from "./LogoutButton";
+import { getCurrentUser, isInBusiness } from "@/queries/auth";
+import AvatarMenu from "@/components/navbar/AvatarMenu";
 
 type NavLinksProps = {
   className?: string;
 };
 
 export default async function NavLinks({ className }: NavLinksProps) {
-  const loggedIn = await isLoggedIn();
+  const user = await getCurrentUser();
+  const inBusiness = await isInBusiness();
   return (
     <div className={cn("flex items-center gap-4", className)}>
       <Link href="/catalog" className="hover:underline">
         Catalog
       </Link>
 
-      {loggedIn && (
+      {user && (
         <>
-          <Link href="/business" className="hover:underline">
-            Business
-          </Link>
-          <LogoutButton />
+          {inBusiness && (
+            <Link href="/business" className="hover:underline">
+              Business
+            </Link>
+          )}
+          <AvatarMenu user={user} />
         </>
       )}
 
-      {!loggedIn && (
+      {!user && (
         <Button asChild>
           <Link href="/login">Login</Link>
         </Button>

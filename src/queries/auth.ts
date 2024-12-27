@@ -23,3 +23,17 @@ export async function isLoggedIn() {
   if (session?.userId) return true;
   return false;
 }
+
+export async function isInBusiness() {
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+
+  if (session?.userId) {
+    const userBusiness = await prisma.userBusiness.findFirst({
+      where: { userId: session?.userId as string },
+    });
+
+    if (userBusiness) return true;
+  }
+  return false;
+}

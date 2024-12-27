@@ -15,9 +15,10 @@ model User {
   email          String
   avatarUrl      String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  orders    Order[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
+  orders         Order[]
+  userBusinesses UserBusiness[]
 }
 
 model Business {
@@ -28,8 +29,21 @@ model Business {
   isStripeLinked  Boolean
   logoURL         String
 
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
+  userBusinesses UserBusiness[]
+}
+
+model UserBusiness {
+  id         String @id @default(uuid())
+  userId     String
+  businessId String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
 }
 
 model Product {
