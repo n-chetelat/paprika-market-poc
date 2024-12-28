@@ -1,3 +1,3 @@
 export default function CatalogPage() {
-  return <main>Catalog</main>;
+  return <div>Catalog</div>;
 }
