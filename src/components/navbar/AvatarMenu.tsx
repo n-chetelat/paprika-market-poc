@@ -25,10 +25,12 @@ export default function AvatarMenu({ user }: AvatarMenuProps) {
         <DropdownMenuTrigger className="rounded-full focus:outline-primary">
           <Avatar>
             <AvatarImage src={user.avatarUrl} alt={`${fullName} avatar`} />
-            <AvatarFallback />
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              {fullName.slice(0, 1)}
+            </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align="end" forceMount>
           <DropdownMenuLabel>
             <p>{fullName}</p>
             <p className="text-muted-foreground text-xs">{user.email}</p>
