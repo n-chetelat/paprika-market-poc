@@ -1,1 +1,1 @@
-export { type User } from "@prisma/client";
+export { type User, type Product } from "@prisma/client";

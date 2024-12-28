@@ -26,9 +26,7 @@ export default async function BusinessPage({
   return (
     <div className="flex flex-col gap-8">
       <TypographyH1>Welcome, {user?.firstName}!</TypographyH1>
-      <TypographyH2 className="mt-8">
-        Here is your overview for {business.name}:
-      </TypographyH2>
+      <TypographyH2>Here is your overview for {business.name}:</TypographyH2>
       <div className="flex flex-row justify-evenly">
         <Card className="p-4 min-w-80">
           <CardHeader>

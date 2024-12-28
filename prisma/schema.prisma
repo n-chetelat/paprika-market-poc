@@ -32,6 +32,7 @@ model Business {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now()) @updatedAt
   userBusinesses UserBusiness[]
+  products       Product[]
 }
 
 model UserBusiness {
@@ -47,15 +48,18 @@ model UserBusiness {
 }
 
 model Product {
-  id           String  @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
   priceInCents Int
   quantity     Int
   published    Boolean
+  imageURLs    String[]
+  businessId   String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   orders    Order[]
+  business  Business @relation(fields: [businessId], references: [id])
 }
 
 model Order {
