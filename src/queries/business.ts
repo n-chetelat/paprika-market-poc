@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getCurrentUser, getSessionUserId } from "@/queries/auth";
+import { getSessionUserId } from "@/queries/auth";
 
 export async function getBusiness(businessId: string) {
   const currentUserInBusiness = await isInBusinessWithId(businessId);
@@ -19,6 +19,20 @@ export async function getBusiness(businessId: string) {
   }
 
   return business;
+}
+
+export async function getUserBusinesses() {
+  const sessionUserId = await getSessionUserId();
+
+  if (!sessionUserId) {
+    throw new Error("There is no user currently logged in");
+  }
+
+  const businesses = await prisma.business.findMany({
+    where: { userBusinesses: { some: { userId: sessionUserId } } },
+  });
+
+  return businesses;
 }
 
 export async function isInBusinessWithId(businessId: string) {

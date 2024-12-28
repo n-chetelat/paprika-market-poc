@@ -17,16 +17,7 @@ export default async function NavLinks({ className }: NavLinksProps) {
         Catalog
       </Link>
 
-      {user && (
-        <>
-          {inBusiness && (
-            <Link href="/business" className="hover:underline">
-              Business
-            </Link>
-          )}
-          <AvatarMenu user={user} />
-        </>
-      )}
+      {user && <AvatarMenu user={user} showBusinessOptions={inBusiness} />}
 
       {!user && (
         <Button asChild>
