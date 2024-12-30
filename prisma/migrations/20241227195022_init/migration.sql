@@ -17,7 +17,7 @@ CREATE TABLE "Business" (
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "stripeAccountId" TEXT NOT NULL,
-    "isStripeLinked" BOOLEAN NOT NULL,
+    "isStripeVerified" BOOLEAN NOT NULL,
     "logoURL" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

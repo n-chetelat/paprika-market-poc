@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default async function BusinessPage({
   params,
@@ -35,7 +36,9 @@ export default async function BusinessPage({
           <CardContent className="text-5xl text-center">$402</CardContent>
           <CardFooter className="flex justify-center">
             <Button asChild variant="link">
-              <Link href="#">See breakdown</Link>
+              <Link href={`/business/${businessId}/payments`}>
+                Get paid <ArrowRight />
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -47,7 +50,7 @@ export default async function BusinessPage({
           <CardFooter className="flex justify-center">
             <Button asChild variant="link">
               <Link href={`/business/${businessId}/products`}>
-                See products
+                See products <ArrowRight />
               </Link>
             </Button>
           </CardFooter>
@@ -59,7 +62,9 @@ export default async function BusinessPage({
           <CardContent className="text-5xl text-center">23</CardContent>
           <CardFooter className="flex justify-center">
             <Button asChild variant="link">
-              <Link href={`/business/${businessId}/orders`}>See orders</Link>
+              <Link href={`/business/${businessId}/orders`}>
+                See orders <ArrowRight />
+              </Link>
             </Button>
           </CardFooter>
         </Card>

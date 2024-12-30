@@ -22,17 +22,19 @@ model User {
 }
 
 model Business {
-  id              String  @id @default(uuid())
-  name            String
-  description     String
-  stripeAccountId String
-  isStripeLinked  Boolean
-  logoURL         String
+  id               String  @id @default(uuid())
+  name             String
+  description      String
+  stripeAccountId  String
+  isStripeVerified Boolean @default(false)
+  logoURL          String
+  email            String
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @default(now()) @updatedAt
-  userBusinesses UserBusiness[]
-  products       Product[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @default(now()) @updatedAt
+  userBusinesses        UserBusiness[]
+  products              Product[]
+  stripeDisabledReasons StripeDisabledReason[]
 }
 
 model UserBusiness {
@@ -74,4 +76,15 @@ model Order {
 
   product  Product @relation(fields: [productId], references: [id])
   customer User    @relation(fields: [customerId], references: [id])
+}
+
+model StripeDisabledReason {
+  id         String @id @default(uuid())
+  businessId String
+  code       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id])
 }

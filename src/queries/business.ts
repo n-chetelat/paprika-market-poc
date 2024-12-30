@@ -47,3 +47,19 @@ export async function isInBusinessWithId(businessId: string) {
   }
   return false;
 }
+
+export async function getStripeBlockersForBusiness(businessId: string) {
+  const currentUserInBusiness = await isInBusinessWithId(businessId);
+
+  if (!currentUserInBusiness) {
+    throw new Error(
+      `The current user is not authorized to access business ${businessId}`
+    );
+  }
+
+  const blockers = await prisma.stripeDisabledReason.findMany({
+    where: { businessId },
+  });
+
+  return blockers;
+}

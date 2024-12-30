@@ -1,4 +1,4 @@
-import BusinessProductCard from "@/components/BusinessProductCard";
+import BusinessProductCard from "@/components/business/BusinessProductCard";
 import { TypographyH1 } from "@/components/ui/typography";
 import { isInBusinessWithId } from "@/queries/business";
 import { getBusinessProducts } from "@/queries/product";
