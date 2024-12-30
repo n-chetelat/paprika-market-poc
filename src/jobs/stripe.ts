@@ -9,12 +9,7 @@ type EventData = {
 export const HANDLED_EVENTS = [
   "account.application.authorized",
   "account.updated",
-  //   "payment_intent.succeeded",
-  //   "payment_intent.processing",
-  //   "payment_intent.payment_failed",
-  //   "refund.created",
-  //   "refund.updated",
-  //   "refund.failed",
+  "checkout.session.completed",
 ];
 
 export const handleStripeEvent = inngest.createFunction(
@@ -28,6 +23,9 @@ export const handleStripeEvent = inngest.createFunction(
         break;
       case "account.updated":
         handleAccountUpdated(eventData);
+        break;
+      case "checkout.session.completed":
+        handleCheckoutCompleted(eventData);
         break;
       default:
         console.log(`Unhandled event type ${eventData.stripeEvent.type}`);
@@ -52,7 +50,7 @@ async function handleAccountUpdated(eventData: EventData) {
   const disabledReason =
     eventData.stripeEvent.data.object.requirements.disabled_reason;
 
-  // Add a record of any reasons why the verification was not successful.
+  // Add a record of any reasons that the verification was not successful.
   // Use this record to notify user later.
   if (disabledReason) {
     const blocker = await prisma.stripeDisabledReason.findFirst({
@@ -86,4 +84,38 @@ async function handleAccountUpdated(eventData: EventData) {
       `Successfully updated Stripe account for business "${businessId}"`
     );
   }
+}
+
+async function handleCheckoutCompleted(eventData: EventData) {
+  const checkoutSessionId = eventData.stripeEvent.data.object.id;
+  const userId = eventData.stripeEvent.data.object.client_reference_id;
+  const amountTotal = eventData.stripeEvent.data.object.amount_total;
+  const productId = eventData.stripeEvent.data.object.metadata.productId;
+
+  const order = await prisma.order.create({
+    data: {
+      productId,
+      customerId: userId,
+      stripeCheckoutSessionId: checkoutSessionId,
+      pricePaidInCents: amountTotal,
+    },
+  });
+
+  // Decrease quantity from inventory
+  if (order) {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { quantity: true },
+    });
+    const quantity =
+      product && product?.quantity - 1 < 0
+        ? 0
+        : (product?.quantity as number) - 1;
+    prisma.product.update({
+      where: { id: productId },
+      data: { quantity },
+    });
+  }
+
+  console.log(`Order was created from checkout session ${checkoutSessionId}`);
 }
