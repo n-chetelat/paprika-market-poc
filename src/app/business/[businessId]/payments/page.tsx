@@ -1,3 +1,4 @@
+import BackButton from "@/components/common/BackButton";
 import StripeAccountBlockedForm from "@/components/stripe/StripeAccountBlockedForm";
 import StripeAccountDashboardForm from "@/components/stripe/StripeAccountDashboardForm";
 import StripeAccountForm from "@/components/stripe/StripeAccountForm";
@@ -32,6 +33,7 @@ export default async function BusinessPaymentsPage({
 
   return (
     <div>
+      <BackButton toPath={`/business/${businessId}`} />
       {!blocker && !business.isStripeVerified && (
         <StripeAccountForm
           businessId={businessId}
