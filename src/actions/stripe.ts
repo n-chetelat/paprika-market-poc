@@ -18,7 +18,6 @@ export async function createConnectedAccount(
   let accountId = formData.get("accountId") as string | undefined;
   // check first if the account already exists,
   // in case the user had left in the middle of linking their account
-  console.log("accountId is ", accountId);
 
   if (!accountId) {
     const account = await createStripeAccount(businessId);
@@ -105,7 +104,7 @@ export async function buyProduct(prevState: any, formData: FormData) {
         destination: product.business.stripeAccountId,
       },
     },
-    success_url: `${process.env.SERVER_URL}/purchase/success`,
+    success_url: `${process.env.SERVER_URL}/purchase/success?ssession_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.SERVER_URL}/catalog`,
     metadata: {
       productId: product.id,
@@ -117,5 +116,5 @@ export async function buyProduct(prevState: any, formData: FormData) {
 
 // FOR REMOVING TEST ACCOUNTS
 // export async function deleteStripeAccount() {
-//   const deleted = await stripe.accounts.del("acct_1QbS37PLHN9m2vNq");
+//   const deleted = await stripe.accounts.del("acct_1QbplFPKoCWTZZVW");
 // }

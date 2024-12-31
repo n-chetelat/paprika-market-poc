@@ -32,7 +32,7 @@ export default async function BusinessPaymentsPage({
   // - Already connected to Stripe successfully -> account id is string, is verified is true, has no blockers
 
   return (
-    <div>
+    <>
       <BackButton toPath={`/business/${businessId}`} />
       {!blocker && !business.isStripeVerified && (
         <StripeAccountForm
@@ -57,6 +57,6 @@ export default async function BusinessPaymentsPage({
           className={formDimensions}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -111,7 +111,7 @@ async function handleCheckoutCompleted(eventData: EventData) {
       product && product?.quantity - 1 < 0
         ? 0
         : (product?.quantity as number) - 1;
-    prisma.product.update({
+    await prisma.product.update({
       where: { id: productId },
       data: { quantity },
     });

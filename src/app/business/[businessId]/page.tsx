@@ -37,7 +37,7 @@ export default async function BusinessPage({
           <CardFooter className="flex justify-center">
             <Button asChild variant="link">
               <Link href={`/business/${businessId}/payments`}>
-                Get paid <ArrowRight />
+                See payments <ArrowRight />
               </Link>
             </Button>
           </CardFooter>

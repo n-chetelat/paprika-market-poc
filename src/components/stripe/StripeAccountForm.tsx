@@ -1,6 +1,6 @@
 "use client";
 
-import { createConnectedAccount, deleteStripeAccount } from "@/actions/stripe";
+import { createConnectedAccount } from "@/actions/stripe";
 import { Button } from "@/components/ui/button";
 import {
   Card,
