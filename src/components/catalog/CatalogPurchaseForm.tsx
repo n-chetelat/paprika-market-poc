@@ -1,6 +1,6 @@
 "use client";
 
-import { buyProduct } from "@/actions/stripe";
+import { purchaseProduct } from "@/actions/stripe";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ type CatalogPurchaseFormProps = {
 export default function CatalogPurchaseForm({
   product,
 }: CatalogPurchaseFormProps) {
-  const [state, action] = useActionState(buyProduct, undefined);
+  const [state, action] = useActionState(purchaseProduct, undefined);
 
   return (
     <form action={action}>

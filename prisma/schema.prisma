@@ -65,12 +65,12 @@ model Product {
 }
 
 model Order {
-  id                      String  @id @default(uuid())
+  id                      String    @id @default(uuid())
   customerId              String
   productId               String
   pricePaidInCents        Int
-  refunded                Boolean @default(false)
   stripeCheckoutSessionId String
+  refundedAt              DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

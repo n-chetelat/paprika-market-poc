@@ -10,6 +10,9 @@ export const HANDLED_EVENTS = [
   "account.application.authorized",
   "account.updated",
   "checkout.session.completed",
+  "refund.created",
+  "refund.updated",
+  "refund.failed",
 ];
 
 export const handleStripeEvent = inngest.createFunction(
@@ -26,6 +29,13 @@ export const handleStripeEvent = inngest.createFunction(
         break;
       case "checkout.session.completed":
         handleCheckoutCompleted(eventData);
+        break;
+      case "refund.created":
+      case "refund.updated":
+        handleRefundSuccessful(eventData);
+        break;
+      case "refund.failed":
+        handleRefundUnsuccessful(eventData);
         break;
       default:
         console.log(`Unhandled event type ${eventData.stripeEvent.type}`);
@@ -118,4 +128,32 @@ async function handleCheckoutCompleted(eventData: EventData) {
   }
 
   console.log(`Order was created from checkout session ${checkoutSessionId}`);
+}
+
+async function handleRefundSuccessful(eventData: EventData) {
+  const orderId = eventData.stripeEvent.data.object.metadata.orderId;
+  const refundSuccessful =
+    eventData.stripeEvent.data.object.status === "succeeded";
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!order) {
+    console.log(`Unable to find order ${orderId} to register refund.`);
+    return;
+  }
+
+  if (!order.refundedAt && refundSuccessful) {
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { refundedAt: new Date() },
+    });
+
+    console.log(`Successfully refunded transaction`);
+  }
+}
+
+async function handleRefundUnsuccessful(eventData: EventData) {
+  const orderId = eventData.stripeEvent.data.object.metadata.orderId;
+  console.log(`Unable to refund order ${orderId}`);
 }

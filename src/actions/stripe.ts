@@ -61,7 +61,7 @@ export async function getStripeDashboardLink(
   return redirect(dashboardLink.url);
 }
 
-export async function buyProduct(prevState: any, formData: FormData) {
+export async function purchaseProduct(prevState: any, formData: FormData) {
   const userId = await getSessionUserId();
 
   const productId = formData.get("productId") as string;
@@ -85,6 +85,13 @@ export async function buyProduct(prevState: any, formData: FormData) {
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     client_reference_id: userId as string,
+    automatic_tax: {
+      enabled: true,
+      liability: {
+        type: "account",
+        account: product.business.stripeAccountId,
+      },
+    },
     line_items: [
       {
         price_data: {
@@ -104,6 +111,7 @@ export async function buyProduct(prevState: any, formData: FormData) {
         destination: product.business.stripeAccountId,
       },
     },
+    // You can pass the CHECKOUT_SESSION_ID string here and it will be replaced by the actual id
     success_url: `${process.env.SERVER_URL}/purchase/success?ssession_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.SERVER_URL}/catalog`,
     metadata: {
@@ -114,7 +122,33 @@ export async function buyProduct(prevState: any, formData: FormData) {
   return redirect(checkoutSession.url as string);
 }
 
-// FOR REMOVING TEST ACCOUNTS
-// export async function deleteStripeAccount() {
-//   const deleted = await stripe.accounts.del("acct_1QbplFPKoCWTZZVW");
+export async function issueRefund(prevState: any, formData: FormData) {
+  const checkoutSessionId = formData.get("checkoutSessionId") as string;
+  const orderId = formData.get("orderId") as string;
+  const checkoutSession = await stripe.checkout.sessions.retrieve(
+    checkoutSessionId
+  );
+
+  const paymentIntentId = checkoutSession.payment_intent;
+
+  if (!paymentIntentId) {
+    throw new Error(
+      `Payment intent unavailable for checkout session ${checkoutSessionId}`
+    );
+  }
+
+  await stripe.refunds.create({
+    payment_intent: paymentIntentId as string,
+    reason: "requested_by_customer",
+    refund_application_fee: true,
+    reverse_transfer: true, // Required by refund_application_fee: true
+    metadata: {
+      orderId,
+    },
+  });
+}
+
+//   FOR REMOVING TEST ACCOUNTS
+//   export async function deleteStripeAccount() {
+//     const deleted = await stripe.accounts.del("acct_1QbplFPKoCWTZZVW");
 // }

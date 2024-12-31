@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowUpDown } from "lucide-react";
+import BusinessOrderRefundForm from "@/components/business/BusinessOrderRefundForm";
 
 type BusinessOrdersTableProps = {
   orders: OrderWithProduct[];
@@ -94,9 +95,20 @@ export default function BusinessOrdersTable({
       },
     },
     {
-      id: "refunded",
-      accessorFn: (row) => (row.refunded ? "Yes" : "No"),
-      header: "Refunded",
+      id: "refundButton",
+      header: "Issue Refund",
+      cell: ({ row }) => {
+        const order = row.original;
+        return (
+          <>
+            {order.refundedAt ? (
+              `Refunded on ${formatDate(order.refundedAt)}`
+            ) : (
+              <BusinessOrderRefundForm order={order} />
+            )}
+          </>
+        );
+      },
     },
   ];
 
@@ -114,8 +126,6 @@ export default function BusinessOrdersTable({
     },
   });
 
-  // Display orders table with:
-  // Date, product (link), price paid, refunded?
   return (
     <>
       <div className="flex items-center py-4">
