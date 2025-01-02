@@ -1,4 +1,5 @@
 import { stripe } from "@/lib/stripe";
+import { User } from "@/lib/types";
 
 export async function createStripeAccount(businessId: string) {
   try {
@@ -46,4 +47,19 @@ export async function createStripeAccountLink(
     );
     return null;
   }
+}
+
+export async function createCustomer(user: User) {
+  const customer = await stripe.customers.create({
+    name: `${user.firstName} ${user.lastName}`,
+    email: user.email,
+  });
+
+  if (!customer) {
+    throw new Error(
+      `An error occurred while creating a customer for user ${user.id}`
+    );
+  }
+
+  return customer;
 }

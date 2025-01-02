@@ -7,18 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PaymentMode {
+  oneTime
+  subscription
+}
+
 model User {
-  id             String @id @default(uuid())
-  hashedPassword String
-  firstName      String
-  lastName       String
-  email          String
-  avatarUrl      String
+  id               String  @id @default(uuid())
+  hashedPassword   String
+  firstName        String
+  lastName         String
+  email            String  @unique
+  avatarUrl        String?
+  stripeCustomerId String?
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now()) @updatedAt
   orders         Order[]
   userBusinesses UserBusiness[]
+  subscription   Subscription[]
 }
 
 model Business {
@@ -30,8 +37,9 @@ model Business {
   logoURL          String
   email            String
 
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
   userBusinesses        UserBusiness[]
   products              Product[]
   stripeDisabledReasons StripeDisabledReason[]
@@ -54,7 +62,7 @@ model Product {
   name         String
   priceInCents Int
   quantity     Int
-  published    Boolean
+  published    Boolean  @default(false)
   imageURLs    String[]
   businessId   String
 
@@ -65,18 +73,20 @@ model Product {
 }
 
 model Order {
-  id                      String    @id @default(uuid())
+  id                      String      @id @default(uuid())
   customerId              String
   productId               String
   pricePaidInCents        Int
-  stripeCheckoutSessionId String
+  stripeCheckoutSessionId String      @unique
   refundedAt              DateTime?
+  mode                    PaymentMode @default(oneTime)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  product  Product @relation(fields: [productId], references: [id])
-  customer User    @relation(fields: [customerId], references: [id])
+  product      Product       @relation(fields: [productId], references: [id])
+  customer     User          @relation(fields: [customerId], references: [id])
+  subscription Subscription?
 }
 
 model StripeDisabledReason {
@@ -88,4 +98,17 @@ model StripeDisabledReason {
   updatedAt DateTime @default(now()) @updatedAt
 
   business Business @relation(fields: [businessId], references: [id])
+}
+
+model Subscription {
+  id                   String @id @default(uuid())
+  userId               String
+  orderId              String @unique
+  stripeSubscriptionId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
 }

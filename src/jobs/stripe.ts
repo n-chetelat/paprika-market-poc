@@ -1,6 +1,7 @@
 import { inngest } from "@/lib/inngest";
 import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import Stripe from "stripe";
 
 type EventData = {
   stripeEvent: any;
@@ -45,7 +46,9 @@ export const handleStripeEvent = inngest.createFunction(
 );
 
 async function handleAccountCreated(eventData: EventData) {
-  const account = await stripe.accounts.retrieve(eventData.stripeEvent.account);
+  const account = await stripe.accounts.retrieve(
+    eventData.stripeEvent.account as string
+  );
   await prisma.business.update({
     where: { id: account.metadata?.businessId },
     data: { stripeAccountId: account.id },
@@ -101,6 +104,7 @@ async function handleCheckoutCompleted(eventData: EventData) {
   const userId = eventData.stripeEvent.data.object.client_reference_id;
   const amountTotal = eventData.stripeEvent.data.object.amount_total;
   const productId = eventData.stripeEvent.data.object.metadata.productId;
+  const mode = eventData.stripeEvent.data.object.mode;
 
   const order = await prisma.order.create({
     data: {
@@ -108,22 +112,40 @@ async function handleCheckoutCompleted(eventData: EventData) {
       customerId: userId,
       stripeCheckoutSessionId: checkoutSessionId,
       pricePaidInCents: amountTotal,
+      mode: mode === "subscription" ? "subscription" : "oneTime",
     },
   });
 
+  if (!order) {
+    console.log(
+      `Unable to create order for checkout session ${checkoutSessionId}`
+    );
+    return;
+  }
+
   // Decrease quantity from inventory
-  if (order) {
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-      select: { quantity: true },
-    });
-    const quantity =
-      product && product?.quantity - 1 < 0
-        ? 0
-        : (product?.quantity as number) - 1;
-    await prisma.product.update({
-      where: { id: productId },
-      data: { quantity },
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { quantity: true },
+  });
+  const quantity =
+    product && product?.quantity - 1 < 0
+      ? 0
+      : (product?.quantity as number) - 1;
+  await prisma.product.update({
+    where: { id: productId },
+    data: { quantity },
+  });
+
+  if (mode === "subscription") {
+    const subscriptionId = eventData.stripeEvent.data.object.subscription;
+
+    await prisma.subscription.create({
+      data: {
+        orderId: order.id,
+        userId,
+        stripeSubscriptionId: subscriptionId,
+      },
     });
   }
 

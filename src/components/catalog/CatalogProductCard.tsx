@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 import Image from "next/image";
 import { CircleCheck, CircleX } from "lucide-react";
 import CatalogPurchaseForm from "@/components/catalog/CatalogPurchaseForm";
+import CatalogSubscribeForm from "./CatalogSubscribeForm";
 
 type CatalogProductCardProps = {
   product: Product;
@@ -41,7 +42,10 @@ export default function CatalogProductCard({
               Out of Stock <CircleX className="stroke-red-700" />
             </p>
           )}
-          <CatalogPurchaseForm product={product} />
+          <div className="flex flex-row gap-4">
+            <CatalogPurchaseForm product={product} />
+            <CatalogSubscribeForm product={product} />
+          </div>
         </div>
       </CardContent>
     </Card>

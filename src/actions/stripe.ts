@@ -5,6 +5,7 @@ import { stripe } from "@/lib/stripe";
 import { getUserBusinesses, isInBusinessWithId } from "@/queries/business";
 import { redirect } from "next/navigation";
 import {
+  createCustomer,
   createStripeAccount,
   createStripeAccountLink,
 } from "@/actions/lib/stripe";
@@ -62,7 +63,7 @@ export async function getStripeDashboardLink(
 }
 
 export async function purchaseProduct(prevState: any, formData: FormData) {
-  const userId = await getSessionUserId();
+  let user = await getCurrentUser();
 
   const productId = formData.get("productId") as string;
   const product = await prisma.product.findUnique({
@@ -78,13 +79,26 @@ export async function purchaseProduct(prevState: any, formData: FormData) {
     },
   });
 
-  if (!userId || !product) {
+  if (!user || !product) {
     throw new Error(`Product could not be found: ${productId}`);
+  }
+
+  if (!user.stripeCustomerId) {
+    const customer = await createCustomer(user);
+
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { stripeCustomerId: customer.id },
+    });
   }
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
-    client_reference_id: userId as string,
+    customer: user.stripeCustomerId as string,
+    client_reference_id: user.id,
+    customer_update: {
+      address: "auto",
+    },
     automatic_tax: {
       enabled: true,
       liability: {
@@ -112,6 +126,89 @@ export async function purchaseProduct(prevState: any, formData: FormData) {
       },
     },
     // You can pass the CHECKOUT_SESSION_ID string here and it will be replaced by the actual id
+    success_url: `${process.env.SERVER_URL}/purchase/success?ssession_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.SERVER_URL}/catalog`,
+    metadata: {
+      productId: product.id,
+    },
+  });
+
+  return redirect(checkoutSession.url as string);
+}
+
+export async function purchaseSubscription(prevState: any, formData: FormData) {
+  let user = await getCurrentUser();
+
+  const productId = formData.get("productId") as string;
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: {
+      id: true,
+      name: true,
+      imageURLs: true,
+      priceInCents: true,
+      business: {
+        select: { stripeAccountId: true },
+      },
+    },
+  });
+
+  if (!user || !product) {
+    throw new Error(`Product could not be found: ${productId}`);
+  }
+
+  if (!user.stripeCustomerId) {
+    const customer = await createCustomer(user);
+
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { stripeCustomerId: customer.id },
+    });
+  }
+
+  const checkoutSession = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer: user.stripeCustomerId as string,
+    customer_update: {
+      name: "never",
+      address: "auto",
+    },
+    client_reference_id: user.id,
+    allow_promotion_codes: true,
+    billing_address_collection: "auto",
+    consent_collection: {
+      payment_method_reuse_agreement: {
+        position: "auto",
+      },
+      terms_of_service: "none",
+    },
+    saved_payment_method_options: {
+      payment_method_save: "enabled",
+    },
+    line_items: [
+      {
+        price_data: {
+          currency: "CAD",
+          unit_amount: product.priceInCents,
+          recurring: {
+            interval: "month",
+            interval_count: 1,
+          },
+          product_data: {
+            name: product.name,
+            images: product.imageURLs,
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    subscription_data: {
+      application_fee_percent: 0.0,
+      transfer_data: {
+        destination: product.business.stripeAccountId,
+      },
+    },
+    submit_type: "subscribe",
     success_url: `${process.env.SERVER_URL}/purchase/success?ssession_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.SERVER_URL}/catalog`,
     metadata: {
