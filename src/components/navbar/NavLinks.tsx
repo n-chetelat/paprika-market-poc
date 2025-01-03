@@ -20,9 +20,14 @@ export default async function NavLinks({ className }: NavLinksProps) {
       {user && <AvatarMenu user={user} showBusinessOptions={inBusiness} />}
 
       {!user && (
-        <Button asChild>
-          <Link href="/login">Login</Link>
-        </Button>
+        <>
+          <Button asChild>
+            <Link href="/login">Log in</Link>
+          </Button>
+          <Button variant="secondary" asChild>
+            <Link href="/signup">Sign up</Link>
+          </Button>
+        </>
       )}
     </div>
   );

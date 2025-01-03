@@ -2,14 +2,13 @@
 
 import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { getUserBusinesses, isInBusinessWithId } from "@/queries/business";
+import { isInBusinessWithId } from "@/queries/business";
 import { redirect } from "next/navigation";
 import {
-  createCustomer,
   createStripeAccount,
   createStripeAccountLink,
 } from "@/actions/lib/stripe";
-import { getCurrentUser, getSessionUserId } from "@/queries/auth";
+import { getCurrentUser } from "@/queries/auth";
 
 export async function createConnectedAccount(
   prevState: any,
@@ -83,15 +82,6 @@ export async function purchaseProduct(prevState: any, formData: FormData) {
     throw new Error(`Product could not be found: ${productId}`);
   }
 
-  if (!user.stripeCustomerId) {
-    const customer = await createCustomer(user);
-
-    user = await prisma.user.update({
-      where: { id: user.id },
-      data: { stripeCustomerId: customer.id },
-    });
-  }
-
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: user.stripeCustomerId as string,
@@ -155,15 +145,6 @@ export async function purchaseSubscription(prevState: any, formData: FormData) {
 
   if (!user || !product) {
     throw new Error(`Product could not be found: ${productId}`);
-  }
-
-  if (!user.stripeCustomerId) {
-    const customer = await createCustomer(user);
-
-    user = await prisma.user.update({
-      where: { id: user.id },
-      data: { stripeCustomerId: customer.id },
-    });
   }
 
   const checkoutSession = await stripe.checkout.sessions.create({
@@ -246,6 +227,6 @@ export async function issueRefund(prevState: any, formData: FormData) {
 }
 
 //   FOR REMOVING TEST ACCOUNTS
-//   export async function deleteStripeAccount() {
-//     const deleted = await stripe.accounts.del("acct_1QbplFPKoCWTZZVW");
+// export async function deleteStripeAccount() {
+//   const deleted = await stripe.accounts.del("acct_1QbWInPMSolUnDpM");
 // }
