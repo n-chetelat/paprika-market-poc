@@ -1,6 +1,6 @@
 "use client";
 
-import { getStripeDashboardLink } from "@/actions/stripe";
+import { deleteStripeAccount, getStripeDashboardLink } from "@/actions/stripe";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,7 +26,7 @@ export default function StripeAccountDashboardForm({
   const [state, action] = useActionState(getStripeDashboardLink, undefined);
 
   return (
-    <form action={action} className={cn(className)}>
+    <form action={deleteStripeAccount} className={cn(className)}>
       <Card>
         <CardHeader>
           <CardTitle className="text-center">

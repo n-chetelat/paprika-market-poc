@@ -147,55 +147,71 @@ export async function purchaseSubscription(prevState: any, formData: FormData) {
     throw new Error(`Product could not be found: ${productId}`);
   }
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: user.stripeCustomerId as string,
-    customer_update: {
-      name: "never",
-      address: "auto",
-    },
-    client_reference_id: user.id,
-    allow_promotion_codes: true,
-    billing_address_collection: "auto",
-    consent_collection: {
-      payment_method_reuse_agreement: {
-        position: "auto",
+  const checkoutSession = await stripe.checkout.sessions.create(
+    {
+      mode: "subscription",
+      automatic_tax: {
+        enabled: true,
+        liability: {
+          type: "account",
+          account: product.business.stripeAccountId,
+        },
       },
-      terms_of_service: "none",
-    },
-    saved_payment_method_options: {
-      payment_method_save: "enabled",
-    },
-    line_items: [
-      {
-        price_data: {
-          currency: "CAD",
-          unit_amount: product.priceInCents,
-          recurring: {
-            interval: "month",
-            interval_count: 1,
+      customer: user.stripeCustomerId as string,
+      customer_update: {
+        name: "never",
+        address: "auto",
+      },
+      client_reference_id: user.id,
+      allow_promotion_codes: true,
+      billing_address_collection: "auto",
+      consent_collection: {
+        payment_method_reuse_agreement: {
+          position: "auto",
+        },
+        terms_of_service: "none",
+      },
+      saved_payment_method_options: {
+        payment_method_save: "enabled",
+      },
+      line_items: [
+        {
+          price_data: {
+            currency: "CAD",
+            unit_amount: product.priceInCents,
+            recurring: {
+              interval: "month",
+              interval_count: 1,
+            },
+            product_data: {
+              name: product.name,
+              images: product.imageURLs,
+            },
           },
-          product_data: {
-            name: product.name,
-            images: product.imageURLs,
+          quantity: 1,
+        },
+      ],
+      subscription_data: {
+        application_fee_percent: 0.0,
+        transfer_data: {
+          destination: product.business.stripeAccountId,
+        },
+        invoice_settings: {
+          issuer: {
+            type: "account",
+            account: product.business.stripeAccountId,
           },
         },
-        quantity: 1,
       },
-    ],
-    subscription_data: {
-      application_fee_percent: 0.0,
-      transfer_data: {
-        destination: product.business.stripeAccountId,
+      submit_type: "subscribe",
+      success_url: `${process.env.SERVER_URL}/purchase/success?ssession_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.SERVER_URL}/catalog`,
+      metadata: {
+        productId: product.id,
       },
     },
-    submit_type: "subscribe",
-    success_url: `${process.env.SERVER_URL}/purchase/success?ssession_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.SERVER_URL}/catalog`,
-    metadata: {
-      productId: product.id,
-    },
-  });
+    { stripeAccount: product.business.stripeAccountId } // This should link the subscription to the connected account
+  );
 
   return redirect(checkoutSession.url as string);
 }
@@ -227,6 +243,6 @@ export async function issueRefund(prevState: any, formData: FormData) {
 }
 
 //   FOR REMOVING TEST ACCOUNTS
-// export async function deleteStripeAccount() {
-//   const deleted = await stripe.accounts.del("acct_1QbWInPMSolUnDpM");
-// }
+export async function deleteStripeAccount() {
+  const deleted = await stripe.accounts.del("acct_1QcyvdPLarMjgyQS");
+}

@@ -1,3 +1,4 @@
+import DeleteAccountButton from "@/components/business/DeleteAccountButton";
 import BackButton from "@/components/common/BackButton";
 import StripeAccountBlockedForm from "@/components/stripe/StripeAccountBlockedForm";
 import StripeAccountDashboardForm from "@/components/stripe/StripeAccountDashboardForm";
@@ -57,6 +58,9 @@ export default async function BusinessPaymentsPage({
           className={formDimensions}
         />
       )}
+
+      {/* TODO Set up collection of tax information for business */}
+      <DeleteAccountButton />
     </>
   );
 }

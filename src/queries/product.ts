@@ -17,6 +17,7 @@ export async function getBusinessProducts(businessId: string) {
   return products;
 }
 
+// TODO Don't show products that are not published or whose businesses are not verified
 export async function getAllProducts(page: number = 1, limit: number = 10) {
   const products = await prisma.product.findMany({
     take: limit,
