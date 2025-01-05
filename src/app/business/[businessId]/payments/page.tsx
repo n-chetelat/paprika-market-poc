@@ -3,11 +3,14 @@ import BackButton from "@/components/common/BackButton";
 import StripeAccountBlockedForm from "@/components/stripe/StripeAccountBlockedForm";
 import StripeAccountDashboardForm from "@/components/stripe/StripeAccountDashboardForm";
 import StripeAccountForm from "@/components/stripe/StripeAccountForm";
+import StripeTaxSettingsForm from "@/components/stripe/StripeTaxSettingsForm";
+import { Separator } from "@/components/ui/separator";
 import {
   getBusiness,
   getStripeBlockersForBusiness,
   isInBusinessWithId,
 } from "@/queries/business";
+import { getStripeTaxCodes } from "@/queries/stripe";
 import { notFound } from "next/navigation";
 
 export default async function BusinessPaymentsPage({
@@ -23,6 +26,8 @@ export default async function BusinessPaymentsPage({
 
   const blockers = await getStripeBlockersForBusiness(businessId);
   const blocker = blockers[-1]?.code;
+
+  const stripeTaxCodes = await getStripeTaxCodes();
 
   const formDimensions = "min-w-[32rem] w-1/3 m-auto";
 
@@ -59,8 +64,17 @@ export default async function BusinessPaymentsPage({
         />
       )}
 
-      {/* TODO Set up collection of tax information for business */}
-      <DeleteAccountButton />
+      <Separator className="my-8" />
+      <StripeTaxSettingsForm
+        stripeAccountId={business.stripeAccountId}
+        stripeTaxCodes={stripeTaxCodes}
+      />
+
+      <Separator className="my-8" />
+
+      <div className="text-right">
+        <DeleteAccountButton />
+      </div>
     </>
   );
 }

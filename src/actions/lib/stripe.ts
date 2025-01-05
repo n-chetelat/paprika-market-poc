@@ -1,6 +1,5 @@
 import { stripe } from "@/lib/stripe";
 import { User } from "@/lib/types";
-import Stripe from "stripe";
 
 export async function createStripeAccount(businessId: string) {
   try {
@@ -63,72 +62,4 @@ export async function createCustomer(user: User) {
   }
 
   return customer;
-}
-
-// https://docs.stripe.com/tax/tax-for-platforms#set-up
-export async function updateTaxSettings(prevState: any, formData: FormData) {
-  const taxCode = formData.get("taxCode") as string;
-  const addressLine1 = formData.get("addressLine1") as string;
-  const addressLine2 = formData.get("addressLine2") as string;
-  const addressCity = formData.get("addressCity") as string;
-  const addressState = formData.get("addressState") as string;
-  const addressCountry = formData.get("addressCountry") as string;
-  const addressPostalCode = formData.get("addressPostalCode") as string;
-  const sripeAccountId = formData.get("accountId") as string;
-
-  // "txcd_10000000" // general code
-  // "txcd_50021003" // fitness class code
-
-  await stripe.tax.settings.update(
-    {
-      defaults: {
-        tax_behavior: "inferred_by_currency",
-        tax_code: taxCode,
-      },
-      head_office: {
-        address: {
-          line1: addressLine1,
-          line2: addressLine2,
-          postal_code: addressPostalCode,
-          city: addressCity,
-          state: addressState,
-          country: addressCountry,
-        },
-      },
-    },
-    { stripeAccount: sripeAccountId }
-  );
-}
-
-export async function createTaxRegistrations(
-  prevState: any,
-  formData: FormData
-) {
-  const activeFrom = formData.get("activeFrom") as string; // timestamp like 1735886532
-  const type = formData.get("type") as
-    | "standard"
-    | "simplified"
-    | "province_standard";
-  const province = formData.get("province") as string;
-  const stripeAccountId = formData.get("accountId") as string;
-
-  const payload = {
-    country: "CA",
-    active_from: parseInt(activeFrom),
-    country_options: {
-      ca: {
-        type: type,
-      },
-    },
-  };
-
-  if (province && type === "province_standard") {
-    payload.country_options.ca.province_standard = {
-      province,
-    };
-  }
-
-  await stripe.tax.registrations.create(payload, {
-    stripeAccount: stripeAccountId,
-  });
 }
