@@ -1,6 +1,5 @@
 export { type User, type Product, type Order } from "@prisma/client";
 import { Product, Order } from "@prisma/client";
-import { string } from "zod";
 
 export type OrderWithProduct = Order & {
   product: Product;

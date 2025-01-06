@@ -3,8 +3,8 @@ import BackButton from "@/components/common/BackButton";
 import StripeAccountBlockedForm from "@/components/stripe/StripeAccountBlockedForm";
 import StripeAccountDashboardForm from "@/components/stripe/StripeAccountDashboardForm";
 import StripeAccountForm from "@/components/stripe/StripeAccountForm";
+import StripeTaxRegistrationForm from "@/components/stripe/StripeTaxRegistrationForm";
 import StripeTaxSettingsForm from "@/components/stripe/StripeTaxSettingsForm";
-import { Separator } from "@/components/ui/separator";
 import {
   getBusiness,
   getStripeBlockersForBusiness,
@@ -27,8 +27,6 @@ export default async function BusinessPaymentsPage({
   const blockers = await getStripeBlockersForBusiness(businessId);
   const blocker = blockers[-1]?.code;
 
-  const stripeTaxCodes = await getStripeTaxCodes();
-
   const formDimensions = "min-w-[32rem] w-1/3 m-auto";
 
   // Possible states:
@@ -40,40 +38,36 @@ export default async function BusinessPaymentsPage({
   return (
     <>
       <BackButton toPath={`/business/${businessId}`} />
-      {!blocker && !business.isStripeVerified && (
-        <StripeAccountForm
-          businessId={businessId}
-          stripeAccountId={business.stripeAccountId}
-          className={formDimensions}
-        />
-      )}
+      <div className="flex flex-col gap-8">
+        {!blocker && !business.isStripeVerified && (
+          <StripeAccountForm
+            businessId={businessId}
+            stripeAccountId={business.stripeAccountId}
+            className={formDimensions}
+          />
+        )}
 
-      {blocker && (
-        <StripeAccountBlockedForm
-          businessId={businessId}
-          stripeAccountId={business.stripeAccountId}
-          blockerReason={blocker}
-          className={formDimensions}
-        />
-      )}
+        {blocker && (
+          <StripeAccountBlockedForm
+            businessId={businessId}
+            stripeAccountId={business.stripeAccountId}
+            blockerReason={blocker}
+            className={formDimensions}
+          />
+        )}
 
-      {!blocker && business.isStripeVerified && (
-        <StripeAccountDashboardForm
-          businessId={businessId}
-          className={formDimensions}
-        />
-      )}
+        {!blocker && business.isStripeVerified && (
+          <StripeAccountDashboardForm
+            businessId={businessId}
+            className={formDimensions}
+          />
+        )}
+        <StripeTaxSettingsForm stripeAccountId={business.stripeAccountId} />
+        <StripeTaxRegistrationForm stripeAccountId={business.stripeAccountId} />
 
-      <Separator className="my-8" />
-      <StripeTaxSettingsForm
-        stripeAccountId={business.stripeAccountId}
-        stripeTaxCodes={stripeTaxCodes}
-      />
-
-      <Separator className="my-8" />
-
-      <div className="text-right">
-        <DeleteAccountButton />
+        <div className="text-right mt-8">
+          <DeleteAccountButton />
+        </div>
       </div>
     </>
   );

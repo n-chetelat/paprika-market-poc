@@ -23,3 +23,8 @@ export function formatDate(date: Date) {
 
   return dateFormatter.format(date);
 }
+
+export function dateToTimestamp(date: Date | undefined) {
+  if (!date) return null;
+  return date.getTime() / 1000;
+}

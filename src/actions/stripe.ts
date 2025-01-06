@@ -9,6 +9,7 @@ import {
   createStripeAccountLink,
 } from "@/actions/lib/stripe";
 import { getCurrentUser } from "@/queries/auth";
+import { act } from "react";
 
 export async function createConnectedAccount(
   prevState: any,
@@ -277,27 +278,50 @@ export async function createTaxRegistrations(
   prevState: any,
   formData: FormData
 ) {
-  const activeFrom = formData.get("activeFrom") as string; // timestamp like 1735886532
-  const type = formData.get("type") as
-    | "standard"
-    | "simplified"
-    | "province_standard";
-  const province = formData.get("province") as string;
+  let activeFrom: number | "now" = parseInt(
+    formData.get("activeFrom") as string
+  ); // timestamp
+  if (isNaN(activeFrom)) {
+    activeFrom = "now";
+  }
+  const expiresAt = parseInt(formData.get("expiresAt") as string); // timestamp
   const stripeAccountId = formData.get("accountId") as string;
+  const standardTax = formData.get("standardTax") as string;
+
+  const province = formData.get("province") as
+    | "QC"
+    | "MB"
+    | "SK"
+    | "BC"
+    | "none";
+
+  type taxType = "standard" | "simplified" | "province_standard" | "";
+
+  let type: taxType = "";
+  if (standardTax === "yes") {
+    if (province && province !== "none") {
+      type = "province_standard";
+    } else {
+      type = "standard";
+    }
+  } else {
+    throw new Error("Select a tax registration type");
+  }
 
   const payload = {
     country: "CA",
-    active_from: parseInt(activeFrom),
+    active_from: activeFrom,
     country_options: {
       ca: {
         type: type,
         province_standard: {
-          province,
+          province: province === "none" ? "" : province,
         },
       },
     },
+    expires_at: isNaN(expiresAt) ? undefined : expiresAt,
   };
-
+  console.log(payload);
   await stripe.tax.registrations.create(payload, {
     stripeAccount: stripeAccountId,
   });

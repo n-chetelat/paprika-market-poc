@@ -12,29 +12,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import TaxCodeSelect from "@/components/stripe/TaxCodeSelect";
-import { StripeTaxCode } from "@/lib/types";
 
 type StripeTaxSettingsForm = {
   stripeAccountId: string;
-  stripeTaxCodes: StripeTaxCode[];
 };
 
 export default function StripeTaxSettingsForm({
   stripeAccountId,
-  stripeTaxCodes,
 }: StripeTaxSettingsForm) {
   const [state, action] = useActionState(updateTaxSettings, undefined);
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action}>
       <Card>
         <CardHeader>
           <CardTitle>Tax Settings</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Label>Tax code</Label>
-          <TaxCodeSelect stripeTaxCodes={stripeTaxCodes} />
+        <CardContent className="flex flex-col gap-4">
+          <Label htmlFor="taxCode">Tax code</Label>
+          <Input id="taxCode" name="taxCode" />
           <Label htmlFor="address1">Address line 1</Label>
           <Input id="address1" name="addressLine1" />
           <Label htmlFor="address2">Address line 2</Label>
