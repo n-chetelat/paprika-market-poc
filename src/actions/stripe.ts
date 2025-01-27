@@ -9,7 +9,6 @@ import {
   createStripeAccountLink,
 } from "@/actions/lib/stripe";
 import { getCurrentUser } from "@/queries/auth";
-import { act } from "react";
 
 export async function createConnectedAccount(
   prevState: any,
@@ -86,6 +85,7 @@ export async function purchaseProduct(prevState: any, formData: FormData) {
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: user.stripeCustomerId as string,
+    allow_promotion_codes: true,
     client_reference_id: user.id,
     customer_update: {
       address: "auto",
@@ -193,6 +193,7 @@ export async function purchaseSubscription(prevState: any, formData: FormData) {
         },
       ],
       subscription_data: {
+        on_behalf_of: product.business.stripeAccountId,
         application_fee_percent: 0.0,
         transfer_data: {
           destination: product.business.stripeAccountId,
@@ -210,8 +211,8 @@ export async function purchaseSubscription(prevState: any, formData: FormData) {
       metadata: {
         productId: product.id,
       },
-    },
-    { stripeAccount: product.business.stripeAccountId } // This should link the subscription to the connected account
+    }
+    // { stripeAccount: product.business.stripeAccountId } // This should link the subscription to the connected account but the client ID needs to be the account's client.
   );
 
   return redirect(checkoutSession.url as string);
