@@ -1,7 +1,6 @@
 import { inngest } from "@/lib/inngest";
 import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import Stripe from "stripe";
 
 type EventData = {
   stripeEvent: any;

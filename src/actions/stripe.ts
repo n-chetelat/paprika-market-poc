@@ -252,7 +252,7 @@ export async function updateTaxSettings(prevState: any, formData: FormData) {
   const addressState = formData.get("addressState") as string;
   const addressCountry = formData.get("addressCountry") as string;
   const addressPostalCode = formData.get("addressPostalCode") as string;
-  const sripeAccountId = formData.get("accountId") as string;
+  const stripeAccountId = formData.get("accountId") as string;
 
   await stripe.tax.settings.update(
     {
@@ -271,7 +271,7 @@ export async function updateTaxSettings(prevState: any, formData: FormData) {
         },
       },
     },
-    { stripeAccount: sripeAccountId }
+    { stripeAccount: stripeAccountId }
   );
 }
 
@@ -326,6 +326,61 @@ export async function createTaxRegistrations(
   await stripe.tax.registrations.create(payload, {
     stripeAccount: stripeAccountId,
   });
+}
+
+export async function createCoupon(prevState: any, formData: FormData) {
+  const businessId = formData.get("businessId") as string;
+  const stripeAccountId = formData.get("stripeAccountId") as string;
+  const name = formData.get("name") as string;
+  const discount = formData.get("discount") as string;
+  const duration = formData.get("duration") as "once" | "repeating";
+  const durationInMonths = formData.get("duration_in_months") as string;
+  const productIds = ((formData.get("productIds") as string) || "").split(",");
+
+  const payload = {
+    name,
+    percent_off: parseInt(discount),
+    duration,
+  };
+
+  if (duration === "repeating" && durationInMonths) {
+    payload.duration_in_months = parseInt(durationInMonths);
+  }
+
+  const stripeCoupon = await stripe.coupons.create(payload, {
+    stripeAccount: stripeAccountId,
+  });
+
+  if (!stripeCoupon) {
+    return {
+      error: `There was a Stripe problem while creating coupon ${name}`,
+    };
+  }
+
+  const coupon = await prisma.coupon.create({
+    data: {
+      businessId,
+      name,
+      stripeCouponId: stripeCoupon.id,
+    },
+  });
+
+  if (!coupon) {
+    return {
+      error: `There was a database error while creating coupon ${name}`,
+    };
+  }
+
+  if (productIds.length > 0) {
+    await prisma.productCoupon.createMany({
+      data: productIds.map((productId: string) => ({
+        productId,
+        couponId: coupon.id,
+      })),
+    });
+  }
+
+  return { error: null };
 }
 
 //   FOR REMOVING TEST ACCOUNTS
