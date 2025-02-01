@@ -332,14 +332,14 @@ export async function createCoupon(prevState: any, formData: FormData) {
   const businessId = formData.get("businessId") as string;
   const stripeAccountId = formData.get("stripeAccountId") as string;
   const name = formData.get("name") as string;
-  const discount = formData.get("discount") as string;
+  const amountOff = formData.get("discount") as string;
   const duration = formData.get("duration") as "once" | "repeating";
   const durationInMonths = formData.get("duration_in_months") as string;
   const productIds = ((formData.get("productIds") as string) || "").split(",");
 
   const payload = {
     name,
-    percent_off: parseInt(discount),
+    amount_off: parseInt(amountOff),
     duration,
   };
 

@@ -21,7 +21,7 @@ export default function CreateCouponForm({
         <input id="name" type="text" name="name" required />
       </div>
       <div>
-        <label htmlFor="discount">Discount (%):</label>
+        <label htmlFor="discount">Discount:</label>
         <input id="discount" type="number" name="discount" required />
       </div>
       <div>
