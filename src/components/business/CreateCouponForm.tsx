@@ -2,6 +2,10 @@
 
 import { useActionState } from "react";
 import { createCoupon } from "@/actions/stripe";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 type CreateCouponFormProps = {
   stripeAccountId: string;
@@ -15,42 +19,50 @@ export default function CreateCouponForm({
   const [state, action, pending] = useActionState(createCoupon, undefined);
 
   return (
-    <form action={action}>
+    <form action={action} className="flex flex-col gap-4 container mx-auto">
       <div>
-        <label htmlFor="name">Coupon Name:</label>
-        <input id="name" type="text" name="name" required />
+        <Label className="text-md" htmlFor="name">
+          Coupon Name
+        </Label>
+        <Input id="name" type="text" name="name" />
       </div>
       <div>
-        <label htmlFor="discount">Discount:</label>
-        <input id="discount" type="number" name="discount" required />
+        <Label className="text-md" htmlFor="discount">
+          Discount Amount
+        </Label>
+        <Input id="discount" type="number" name="discount" />
       </div>
-      <div>
-        <label htmlFor="duration">Duration:</label>
-        <select name="duration" id="duration">
+      <div className="flex flex-col">
+        <Label className="text-md" htmlFor="duration">
+          Duration
+        </Label>
+        <select name="duration" id="duration" className="p-2 border rounded-md">
           <option value="once">Once</option>
           <option value="repeating">Repeating</option>
         </select>
       </div>
       <div>
-        <label htmlFor="duration_in_months">
+        <Label className="text-md" htmlFor="durationInMonths">
           Duration in months (if repeating duration):
-        </label>
-        <input
-          id="duration_in_months"
-          type="number"
-          name="duration_in_months"
-        />
+        </Label>
+        <Input id="durationInMonths" type="number" name="durationInMonths" />
       </div>
-      <div></div>
       <div>
-        <label htmlFor="productIds">Product IDs (comma separated):</label>
-        <textarea id="productIds" name="productIds" />
+        <Label className="text-md" htmlFor="productIds">
+          Product IDs (comma separated):
+        </Label>
+        <Textarea id="productIds" name="productIds" />
       </div>
-      <input type="hidden" name="stripeAccountId" value={stripeAccountId} />
-      <input type="hidden" name="businessId" value={businessId} />
-      <button type="submit" disabled={pending} aria-disabled={pending}>
+      <Input type="hidden" name="stripeAccountId" value={stripeAccountId} />
+      <Input type="hidden" name="businessId" value={businessId} />
+      <Button
+        type="submit"
+        disabled={pending}
+        aria-disabled={pending}
+        className="w-1/4 mx-auto min-w-60"
+      >
         Create Coupon
-      </button>
+      </Button>
       {state?.error && <p>{state.error}</p>}
     </form>
   );
